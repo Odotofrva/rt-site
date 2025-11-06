@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RoboTechi — Tutorials • Boards • Kits</title>
+  <meta name="description" content="RoboTechi: sci‑fi tutorials, microcontroller boards, and DIY electronics kits." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#07090f;           /* deep space */
+      --panel:#0c1220;        /* nebula glass */
+      --ink:#e6f2ff;          /* ice ink */
+      --muted:#9bb3c7;        /* moon dust */
+      --accent:#ffc400;       /* logo gold */
+      --accent-2:#4da3ff;     /* logo electric blue */
+      --ok:#67ff9b;           /* success */
+      --warn:#ffd166;         /* warning */
+      --danger:#ff6b6b;       /* error */
+      --ring: 0 0 0 2px color-mix(in oklab, var(--accent) 60%, #fff 0%);
+      --radius: 18px;
+      --shadow: 0 10px 35px -10px rgb(0 0 0 / .55), inset 0 0 0 1px rgb(255 255 255 / .04);
+      --grad: radial-gradient(1200px_1200px at 80% -20%, color-mix(in oklab, var(--accent) 15%, transparent), transparent 60%),
+              radial-gradient(900px_900px at -10% 0%, color-mix(in oklab, var(--accent-2) 14%, transparent), transparent 60%),
+              linear-gradient(180deg, #0a0f1a 0%, #06070b 100%);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{ margin:0; background:var(--bg); color:var(--ink); font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial; line-height:1.5; overflow-x:hidden; }
+    .sf{font-family: Orbitron, Inter, sans-serif; letter-spacing:.06em}
+    .muted{color:var(--muted)}
+
+    /* Splash */
+    .splash{position:fixed; inset:0; z-index:100; display:grid; place-items:center; background:#0c1220; transition:opacity .6s ease, visibility .6s ease}
+    .splash img{width:min(240px, 50vw); height:auto; filter:drop-shadow(0 12px 28px rgba(0,0,0,.6))}
+    .splash.hidden{opacity:0; visibility:hidden}
+
+    /* Stars + grid background */
+    .stars{position:fixed; inset:0; z-index:-2; pointer-events:none; background:
+      radial-gradient(2px 2px at 20% 30%, #ffffff66, transparent 60%),
+      radial-gradient(1.5px 1.5px at 70% 60%, #aeeaff55, transparent 55%),
+      radial-gradient(1.2px 1.2px at 40% 80%, #fff3, transparent 60%),
+      var(--grad);
+      filter:saturate(1.1) brightness(1.05);
+    }
+    .gridlines::before{
+      content:""; position:absolute; inset:0; pointer-events:none; opacity:.2;
+      background-image:
+        linear-gradient(transparent 31px, color-mix(in oklab, var(--accent) 40%, transparent) 32px),
+        linear-gradient(90deg, transparent 31px, color-mix(in oklab, var(--accent) 40%, transparent) 32px);
+      background-size:32px 32px;
+      mask-image: radial-gradient(60% 50% at 50% 10%, #000 40%, transparent 100%);
+    }
+
+    header{ position:sticky; top:0; z-index:40; backdrop-filter:saturate(1.2) blur(10px); background:linear-gradient(180deg, rgb(9 12 20 /.85), rgb(9 12 20 /.6)); border-bottom:1px solid #ffffff12; }
+    .nav{max-width:1200px; margin:auto; display:flex; align-items:center; gap:16px; padding:12px 16px}
+    .brand{display:flex; gap:10px; align-items:center; text-decoration:none; color:var(--ink)}
+    .logo{width:36px; height:36px; border-radius:10px; display:grid; place-items:center; overflow:hidden}
+    .logo img{width:100%; height:100%; object-fit:contain}
+    .brand h1{font-size:18px; margin:0}
+
+    .navlinks{margin-left:auto; display:flex; gap:8px; align-items:center}
+    .navlinks a, .btn{ text-decoration:none; color:var(--ink); font-weight:600; padding:10px 14px; border-radius:12px; display:inline-flex; align-items:center; gap:8px; border:1px solid #ffffff14; background:#0b122155; box-shadow:var(--shadow); }
+    .navlinks a:hover, .btn:hover{border-color:#ffffff28}
+    .cart{position:relative}
+    .badge{position:absolute; top:-6px; right:-6px; min-width:18px; height:18px; padding:0 4px; display:grid; place-items:center; border-radius:40px; background:var(--accent); color:#001018; font-weight:800; font-size:12px; box-shadow: 0 0 0 2px #001018}
+    .mobile{display:none}
+    @media (max-width: 880px){ .navlinks{display:none} .mobile{display:flex; margin-left:auto} .mobile button{all:unset; display:grid; place-items:center; padding:10px; border-radius:12px; border:1px solid #ffffff14; background:#0b122155} }
+
+    /* Hero */
+    .hero{position:relative; max-width:1200px; margin:0 auto; padding: clamp(32px, 6vw, 72px) 16px; display:grid; grid-template-columns:1.2fr 1fr; gap:28px}
+    .hero .panel{position:relative; border-radius: var(--radius); background:linear-gradient(180deg, #0c1324 0%, #0a1020 100%); border:1px solid #ffffff12; box-shadow: var(--shadow); overflow:hidden}
+    .hero h2{font-size: clamp(26px, 3.6vw, 46px); margin:.2em 0 .4em}
+    .kicker{display:inline-flex; align-items:center; gap:10px; padding:6px 10px; border:1px solid #ffffff1a; border-radius:14px; font-size:12px; text-transform:uppercase; letter-spacing:.12em; color:var(--muted); background:#0b122166}
+    .cta{display:flex; flex-wrap:wrap; gap:10px; margin-top:20px}
+    .btn.primary{background:linear-gradient(135deg, var(--accent), var(--accent-2)); color:#041017; border-color:transparent; box-shadow:0 10px 30px -10px #41e6ff99}
+    .btn.ghost{background:transparent}
+    .glass{position:absolute; inset:0; background:radial-gradient(120% 70% at 80% 0%, color-mix(in oklab, var(--accent) 10%, transparent), transparent), radial-gradient(80% 60% at 0% 100%, color-mix(in oklab, var(--accent-2) 10%, transparent), transparent)}
+    .holo{ position:relative; aspect-ratio:16/10; border-radius: var(--radius); margin: 12px; background: #0a101e; border:1px solid #ffffff18; overflow:hidden; }
+    .holo canvas{width:100%; height:100%; display:block}
+    .scan{position:absolute; inset:0; background: repeating-linear-gradient(transparent, transparent 2px, #7fffd422 3px, transparent 4px); mix-blend-mode:screen; opacity:.35; pointer-events:none}
+    @media (max-width: 880px){ .hero{grid-template-columns:1fr} }
+
+    /* Sections */
+    section{max-width:1200px; margin:0 auto; padding: clamp(28px, 6vw, 64px) 16px}
+    .section-title{display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:18px}
+    .section-title h3{margin:0; font-size: clamp(20px, 2.6vw, 28px)}
+
+    /* Cards */
+    .grid{display:grid; grid-template-columns: repeat(3, 1fr); gap:16px}
+    @media (max-width: 1020px){.grid{grid-template-columns:repeat(2, 1fr)}}
+    @media (max-width: 640px){.grid{grid-template-columns:1fr}}
+    .card{position:relative; border-radius:14px; background:var(--panel); border:1px solid #ffffff12; box-shadow: var(--shadow); overflow:hidden}
+    .card .thumb{aspect-ratio:16/9; background:linear-gradient(180deg,#0e1a35,#091225); border-bottom:1px solid #ffffff10; display:grid; place-items:center}
+    .chip{display:inline-flex; gap:8px; align-items:center; padding:6px 10px; border-radius:999px; background:#0f1a33; border:1px solid #ffffff18; color:var(--accent); font-weight:700; font-size:12px}
+    .card .body{padding:14px}
+    .card h4{margin:0 0 6px; font-size:18px}
+    .card p{margin:0; color:var(--muted)}
+    .tags{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px}
+    .tag{font-size:12px; color:var(--muted); border:1px solid #ffffff1a; padding:4px 8px; border-radius:999px}
+    .price{font-weight:800}
+    .actions{display:flex; gap:8px; margin-top:12px}
+
+    /* Footer */
+    footer{border-top:1px solid #ffffff12; background:#0a0f1a; padding:24px 16px; color:var(--muted)}
+    footer .cols{max-width:1200px; margin:0 auto; display:grid; grid-template-columns:2fr 1fr 1fr; gap:18px}
+    footer a{color:var(--muted); text-decoration:none}
+    footer a:hover{color:var(--ink)}
+    @media (max-width: 880px){footer .cols{grid-template-columns: 1fr}}
+
+    /* Utility */
+    .sr-only{position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0}
+    .search{display:flex; gap:10px; width:min(680px, 100%)}
+    .search input{flex:1; padding:12px 14px; border-radius:12px; background:#0a1224; border:1px solid #ffffff1a; color:var(--ink)}
+    .search input:focus{outline: none; box-shadow: var(--ring)}
+    .search button{padding:12px 14px; border-radius:12px; border:1px solid #ffffff14; background:#0b122155; color:var(--ink); font-weight:700}
+
+    /* Dialogs */
+    dialog{border:none; border-radius:16px; background:#0b1224; color:var(--ink); width:min(720px, 94vw); box-shadow: 0 30px 80px rgb(0 0 0 / .5)}
+    dialog::backdrop{backdrop-filter: blur(8px) saturate(1.2); background: #0006}
+    .cart-row{display:grid; grid-template-columns:1fr auto; gap:12px; padding:12px 0; border-bottom:1px solid #ffffff12}
+    .cart-row:last-child{border-bottom:none}
+
+    a:focus-visible, button:focus-visible{outline:none; box-shadow: var(--ring)}
+  </style>
+</head>
+<body>
+  <!-- Splash screen -->
+  <div id="splash" class="splash" role="img" aria-label="RoboTechi logo splash">
+    <img src="robotechi.png" alt="RoboTechi logo" />
+  </div>
+
+  <div class="stars"></div>
+
+  <header>
+    <nav class="nav">
+      <a class="brand" href="#home" aria-label="RoboTechi home">
+        <div class="logo" aria-hidden="true"><img src="robotechi.png" alt="RoboTechi logo"/></div>
+        <h1 class="sf">RoboTechi</h1>
+      </a>
+      <div class="navlinks sf">
+        <a href="#tutorials">Tutorials</a>
+        <a href="#products">Boards & Kits</a>
+        <a href="#about">About</a>
+        <a href="#contact">Contact</a>
+        <a class="cart" href="#cart" id="openCart"><span>Cart</span><span class="badge" id="cartCount" aria-live="polite">0</span></a>
+      </div>
+      <div class="mobile">
+        <button id="menuBtn" aria-label="Open menu" title="Menu">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16" stroke="var(--ink)" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <dialog id="mobileSheet">
+    <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; border-bottom:1px solid #ffffff18; padding:10px 6px 14px"><div class="sf" style="font-weight:900">Menu</div><button id="closeMenu" class="btn">Close</button></div>
+    <div style="display:flex; flex-direction:column; gap:8px; padding:16px">
+      <a href="#tutorials" class="btn">Tutorials</a>
+      <a href="#products" class="btn">Boards & Kits</a>
+      <a href="#about" class="btn">About</a>
+      <a href="#contact" class="btn">Contact</a>
+      <a class="btn cart" id="openCartMobile">Cart <span class="badge" id="cartCountMobile">0</span></a>
+    </div>
+  </dialog>
+
+  <main id="home">
+    <div class="hero gridlines">
+      <div class="panel" aria-labelledby="hero-title">
+        <div class="glass"></div>
+        <div style="padding: clamp(18px, 3vw, 28px)">
+          <span class="kicker sf">Learn • Build • Launch</span>
+          <h2 id="hero-title" class="sf">Sci‑Fi Tutorials & Pro‑grade Boards for Makers</h2>
+          <p class="muted">RoboTechi teaches electronics with step‑by‑step guides, while our microcontroller boards and DIY kits power your classroom, lab, or weekend projects.</p>
+          <div class="cta">
+            <a class="btn primary sf" href="#products">Shop Boards</a>
+            <a class="btn ghost sf" href="#tutorials">Browse Tutorials</a>
+          </div>
+        </div>
+        <div class="holo" aria-label="Holographic board preview">
+          <canvas id="grid" aria-hidden="true"></canvas>
+          <div class="scan" aria-hidden="true"></div>
+        </div>
+      </div>
+
+      <div class="panel" style="padding:16px">
+        <form class="search" role="search" aria-label="Search tutorials and products" onsubmit="event.preventDefault(); doSearch();">
+          <input id="q" name="q" placeholder="Search tutorials, boards, sensors…" autocomplete="off" />
+          <button class="sf" type="submit">Search</button>
+        </form>
+        <div class="muted" style="margin-top:12px; font-size:13px">Try: <button class="btn" data-example="ATmega328P">ATmega328P</button> <button class="btn" data-example="RP2040">RP2040</button> <button class="btn" data-example="Soldering 101">Soldering 101</button></div>
+        <div style="height:12px"></div>
+        <div class="card">
+          <div class="thumb">
+            <svg width="60" height="60" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <rect x="3" y="5" width="18" height="12" rx="2" stroke="var(--accent)"/>
+              <circle cx="8" cy="11" r="2" stroke="var(--accent-2)"/>
+              <rect x="12" y="9" width="7" height="4" rx="1" stroke="var(--accent-2)"/>
+            </svg>
+          </div>
+          <div class="body">
+            <div class="chip sf">New: RT‑ONE v2</div>
+            <h4 class="sf">RoboTechi RT‑ONE — Classroom‑ready Arduino‑compatible</h4>
+            <p class="muted">USB‑C • 20 I/O • STEM‑focused documentation • CircuitPython ready.</p>
+            <div class="actions">
+              <a class="btn primary sf" href="#products">View Product</a>
+              <a class="btn sf" href="#tutorials">Get Started Guide</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tutorials -->
+    <section id="tutorials">
+      <div class="section-title">
+        <h3 class="sf">Featured Tutorials</h3>
+        <a class="btn sf" href="#">View All</a>
+      </div>
+      <div class="grid" id="tutorialGrid" aria-live="polite"></div>
+    </section>
+
+    <!-- Products -->
+    <section id="products">
+      <div class="section-title">
+        <h3 class="sf">Boards, Sensors & Kits</h3>
+        <div style="display:flex; gap:8px; flex-wrap:wrap">
+          <button class="btn sf" data-filter="all">All</button>
+          <button class="btn sf" data-filter="boards">Boards</button>
+          <button class="btn sf" data-filter="sensors">Sensors</button>
+          <button class="btn sf" data-filter="kits">Kits</button>
+        </div>
+      </div>
+      <div class="grid" id="productGrid" aria-live="polite"></div>
+    </section>
+
+    <section id="about">
+      <div class="section-title">
+        <h3 class="sf">About RoboTechi</h3>
+      </div>
+      <div class="card" style="padding:16px">
+        <p class="muted">RoboTechi creates open, student‑friendly learning paths into electronics and embedded systems. We publish free tutorials, and we design microcontroller boards that minimize friction: USB‑C by default, clear pin labels, breadboard‑friendly footprints, and docs written for real classrooms.</p>
+        <div class="tags">
+          <span class="tag">Open‑source</span>
+          <span class="tag">Classroom‑ready</span>
+          <span class="tag">Arduino‑compatible</span>
+          <span class="tag">CircuitPython</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="contact">
+      <div class="section-title">
+        <h3 class="sf">Contact & Newsletter</h3>
+      </div>
+      <div class="grid">
+        <form class="card" style="padding:16px" onsubmit="event.preventDefault(); alert('Thanks! We\'ll be in touch. (Hook this up to your backend/Email API)'); this.reset();">
+          <h4 class="sf" style="margin-top:0">Say hello</h4>
+          <label class="sr-only" for="name">Name</label>
+          <input id="name" placeholder="Name" class="input" style="margin-bottom:10px; padding:12px 14px; border-radius:12px; border:1px solid #ffffff1a; background:#0a1224; color:var(--ink)"/>
+          <label class="sr-only" for="email">Email</label>
+          <input id="email" type="email" placeholder="Email" class="input" style="margin-bottom:10px; padding:12px 14px; border-radius:12px; border:1px solid #ffffff1a; background:#0a1224; color:var(--ink)"/>
+          <label class="sr-only" for="msg">Message</label>
+          <textarea id="msg" placeholder="How can we help?" rows="5" style="margin-bottom:10px; padding:12px 14px; border-radius:12px; border:1px solid #ffffff1a; background:#0a1224; color:var(--ink); resize:vertical"></textarea>
+          <button class="btn primary sf" type="submit">Send</button>
+        </form>
+
+        <div class="card" style="padding:16px">
+          <h4 class="sf" style="margin-top:0">Stay in the loop</h4>
+          <p class="muted">Get new tutorials, classroom resources, and product drops. (Connect to your ESP / Mailchimp / ConvertKit.)</p>
+          <form class="search" onsubmit="event.preventDefault(); alert('Subscribed ✨'); this.reset();">
+            <input placeholder="Email address" type="email" required />
+            <button class="sf" type="submit">Subscribe</button>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="cols">
+      <div>
+        <div class="sf" style="font-size:18px; font-weight:900; margin-bottom:6px">RoboTechi</div>
+        <div>© <span id="year"></span> RoboTechi. All rights reserved.</div>
+      </div>
+      <div>
+        <div class="sf" style="font-weight:800; margin-bottom:8px">Explore</div>
+        <div><a href="#tutorials">Tutorials</a></div>
+        <div><a href="#products">Boards & Kits</a></div>
+        <div><a href="#about">About</a></div>
+      </div>
+      <div>
+        <div class="sf" style="font-weight:800; margin-bottom:8px">Support</div>
+        <div><a href="#contact">Contact</a></div>
+        <div><a href="#">Docs</a></div>
+        <div><a href="#">Shipping & Returns</a></div>
+      </div>
+    </div>
+  </footer>
+
+  <dialog id="cartModal" aria-labelledby="cartTitle">
+    <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; border-bottom:1px solid #ffffff18; padding:10px 6px 14px">
+      <div id="cartTitle" class="sf" style="font-weight:900">Your Cart</div>
+      <button id="closeCart" class="btn">Close</button>
+    </div>
+    <div id="cartItems" style="padding: 10px 6px"></div>
+    <div style="display:flex; align-items:center; justify-content:space-between; gap:16px; padding:14px 6px; border-top:1px solid #ffffff18">
+      <div class="sf">Total: <span id="cartTotal" class="price">$0.00</span></div>
+      <button class="btn primary sf" onclick="alert('Proceed to checkout — wire this to your payment flow (Stripe, LemonSqueezy, etc.)')">Checkout</button>
+    </div>
+  </dialog>
+
+  <script>
+    // Year
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Splash hide after 3 seconds
+    setTimeout(()=>{ const sp = document.getElementById('splash'); if(sp){ sp.classList.add('hidden'); setTimeout(()=> sp.remove(), 700);} }, 3000);
+
+    // Mobile sheet
+    const sheet = document.getElementById('mobileSheet');
+    document.getElementById('menuBtn').addEventListener('click', ()=> sheet.showModal());
+    document.getElementById('closeMenu').addEventListener('click', ()=> sheet.close());
+
+    // Cart modal
+    const cartModal = document.getElementById('cartModal');
+    document.getElementById('openCart').addEventListener('click', (e)=>{e.preventDefault(); cartModal.showModal();});
+    document.getElementById('openCartMobile').addEventListener('click', ()=> cartModal.showModal());
+    document.getElementById('closeCart').addEventListener('click', ()=> cartModal.close());
+
+    // Search examples
+    document.querySelectorAll('[data-example]').forEach(btn=> btn.addEventListener('click', ()=>{ document.getElementById('q').value = btn.dataset.example; doSearch(); }))
+
+    // Hero grid animation
+    const cvs = document.getElementById('grid'); const ctx = cvs.getContext('2d');
+    const DPR = Math.max(1, Math.min(2, window.devicePixelRatio||1));
+    function resize(){ const r = cvs.getBoundingClientRect(); cvs.width = r.width * DPR; cvs.height = r.height * DPR; ctx.setTransform(DPR,0,0,DPR,0,0); }
+    const stars = Array.from({length: 80}, (_,i)=>({x:Math.random(), y:Math.random(), z:Math.random()*0.6+0.4, s: Math.random()*1.4+0.6}))
+    function tick(t){
+      const {width:w, height:h} = cvs; ctx.clearRect(0,0,w,h);
+      // grid
+      ctx.globalAlpha = 0.65; ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent-2').trim() + '22';
+      const step = 32; for(let x=0; x<w; x+=step){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,h); ctx.stroke(); }
+      for(let y=0; y<h; y+=step){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(w,y); ctx.stroke(); }
+      // stars parallax
+      ctx.globalAlpha = 0.9;
+      stars.forEach((s,i)=>{
+        const X = (s.x * w + Math.sin((t/1200 + i)*0.3)*12*s.z);
+        const Y = (s.y * h + Math.cos((t/1600 + i)*0.25)*10*s.z);
+        ctx.fillStyle = i%3? 'rgba(255,196,0,.85)':'rgba(77,163,255,.95)';
+        ctx.fillRect(X, Y, s.s, s.s);
+      })
+      requestAnimationFrame(tick);
+    }
+    new ResizeObserver(resize).observe(cvs); resize(); requestAnimationFrame(tick);
+
+    // Demo data
+    const tutorials = [
+      {title:'Blink: Your First LED on RT‑ONE', level:'Beginner', tags:['ATmega328P','GPIO','Basics'], minutes:8},
+      {title:'Reading Sensors with RP2040 (I2C)', level:'Intermediate', tags:['RP2040','I2C','BME280'], minutes:14},
+      {title:'Soldering 101: Through‑hole to Clean Joints', level:'Beginner', tags:['Tools','Safety','Skill'], minutes:12},
+      {title:'CircuitPython Quickstart on RT‑ONE', level:'Beginner', tags:['CircuitPython','USB‑C'], minutes:10},
+      {title:'Debouncing Buttons in Hardware & Code', level:'Intermediate', tags:['Interrupts','Pull‑ups'], minutes:9},
+      {title:'Driving Neopixels with DMA', level:'Advanced', tags:['RP2040','PIO','LED'], minutes:18}
+    ];
+
+    const products = [
+      {sku:'RT1-V2', name:'RT‑ONE v2 (ATmega328P)', type:'boards', price:24.00, features:['USB‑C','20 I/O','Arduino‑compatible']},
+      {sku:'S1-RP', name:'SectorOne (RP2040)', type:'boards', price:19.00, features:['Dual‑core','UF2 Boot','CircuitPython']},
+      {sku:'K-START', name:'Starter Solder Kit', type:'kits', price:15.00, features:['Iron','Solder','Stand']},
+      {sku:'BME-280', name:'BME280 Sensor Breakout', type:'sensors', price:9.50, features:['Temp','Humidity','Pressure']},
+      {sku:'KIT-CLASS', name:'Classroom 10‑Pack (RT‑ONE)', type:'kits', price:199.00, features:['10× RT‑ONE','Guidebook','Lesson Plan']},
+      {sku:'OLED-13', name:'0.96" OLED I2C', type:'sensors', price:6.50, features:['128×64','I2C','Low‑power']}
+    ];
+
+    function el(tag, attrs={}, ...kids){ const n = document.createElement(tag); Object.entries(attrs).forEach(([k,v])=>{ if(k==='class') n.className = v; else if(k==='html') n.innerHTML = v; else n.setAttribute(k, v); }); kids.flat().forEach(k=> n.append(k)); return n; }
+
+    // Render tutorials
+    const tutorialGrid = document.getElementById('tutorialGrid');
+    function renderTutorials(list){
+      tutorialGrid.innerHTML='';
+      list.forEach(t=>{
+        const card = el('article', {class:'card', role:'article'});
+        const thumb = el('div', {class:'thumb'}, svgBoard());
+        const body = el('div', {class:'body'});
+        body.append(el('h4', {class:'sf', html:t.title}));
+        body.append(el('p', {class:'muted', html:`${t.level} • ${t.minutes} min read`}));
+        const tags = el('div', {class:'tags'}); t.tags.forEach(tag=> tags.append(el('span', {class:'tag', html:tag}))); body.append(tags);
+        const actions = el('div', {class:'actions'}); actions.append(el('a', {class:'btn sf', href:'#', html:'Read'}));
+        card.append(thumb, body, actions); tutorialGrid.append(card);
+      })
+    }
+
+    // Render products
+    const productGrid = document.getElementById('productGrid');
+    function renderProducts(list){
+      productGrid.innerHTML='';
+      list.forEach(p=>{
+        const card = el('article', {class:'card', role:'article'});
+        const thumb = el('div', {class:'thumb'}, svgChip());
+        const body = el('div', {class:'body'});
+        body.append(el('h4', {class:'sf', html:p.name}));
+        body.append(el('p', {class:'muted', html:p.features.join(' • ')}));
+        const actions = el('div', {class:'actions'});
+        actions.append(el('span', {class:'sf price', html:`$${p.price.toFixed(2)}`}));
+        const add = el('button', {class:'btn primary sf', type:'button'}, 'Add to cart'); add.addEventListener('click', ()=> addToCart(p));
+        actions.append(add);
+        card.append(thumb, body, actions); productGrid.append(card);
+      })
+    }
+
+    // Filters
+    document.querySelectorAll('[data-filter]').forEach(btn=> btn.addEventListener('click', ()=>{
+      const f = btn.dataset.filter; if(f==='all') renderProducts(products); else renderProducts(products.filter(p=> p.type===f));
+    }))
+
+    // Simple search
+    function doSearch(){
+      const q = (document.getElementById('q').value||'').toLowerCase().trim();
+      if(!q){ renderTutorials(tutorials); renderProducts(products); return; }
+      renderTutorials(tutorials.filter(t=> t.title.toLowerCase().includes(q) || t.tags.join(' ').toLowerCase().includes(q)));
+      renderProducts(products.filter(p=> [p.name, ...p.features].join(' ').toLowerCase().includes(q)));
+    }
+
+    // Cart
+    const cart = []; const cartCount = document.getElementById('cartCount'); const cartCountMobile = document.getElementById('cartCountMobile'); const cartItems = document.getElementById('cartItems'); const cartTotal = document.getElementById('cartTotal');
+    function addToCart(p){ const found = cart.find(i=> i.sku===p.sku); if(found) found.qty += 1; else cart.push({...p, qty:1}); updateCart(); cartModal.showModal(); }
+    function updateCart(){ const count = cart.reduce((n,i)=> n+i.qty, 0); cartCount.textContent = count; cartCountMobile.textContent = count; cartItems.innerHTML = ''; let total = 0; cart.forEach(i=>{ total += i.price * i.qty; const row = el('div', {class:'cart-row'}); row.append(el('div', {html:`<div class=\"sf\">${i.name}</div><div class=\"muted\">${i.qty} × $${i.price.toFixed(2)}</div>`})); const controls = el('div', {style:'display:flex; gap:6px'}); const minus = el('button', {class:'btn', type:'button'}, '−'); minus.addEventListener('click', ()=>{ i.qty = Math.max(0, i.qty-1); if(i.qty===0) cart.splice(cart.indexOf(i),1); updateCart(); }); const plus = el('button', {class:'btn', type:'button'}, '+'); plus.addEventListener('click', ()=>{ i.qty += 1; updateCart(); }); const rm = el('button', {class:'btn ghost', type:'button'}, 'Remove'); rm.addEventListener('click', ()=>{ cart.splice(cart.indexOf(i),1); updateCart(); }); controls.append(minus, plus, rm); row.append(controls); cartItems.append(row); }); cartTotal.textContent = `$${total.toFixed(2)}`; }
+
+    // SVG placeholders use theme colors
+    function themeVar(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+    function svgBoard(){ const s = document.createElementNS('http://www.w3.org/2000/svg','svg'); s.setAttribute('viewBox','0 0 200 112'); s.setAttribute('width','100%'); s.setAttribute('height','100%'); s.innerHTML = `
+        <rect x=\"8\" y=\"8\" width=\"184\" height=\"96\" rx=\"10\" fill=\"#0b162f\" stroke=\"${themeVar('--accent-2')}66\"/>
+        <rect x=\"28\" y=\"28\" width=\"60\" height=\"56\" rx=\"6\" fill=\"#0f1e44\" stroke=\"${themeVar('--accent-2')}66\"/>
+        <rect x=\"108\" y=\"28\" width=\"64\" height=\"20\" rx=\"4\" fill=\"#0f1e44\" stroke=\"${themeVar('--accent-2')}66\"/>
+        <rect x=\"108\" y=\"58\" width=\"64\" height=\"20\" rx=\"4\" fill=\"#0f1e44\" stroke=\"${themeVar('--accent-2')}66\"/>
+        <g fill=\"${themeVar('--accent')}\">${Array.from({length:12},(_,i)=>`<circle cx=\"${24 + i*14}\" cy=\"96\" r=\"2.5\" />`).join('')}</g>`; return s; }
+    function svgChip(){ const s = document.createElementNS('http://www.w3.org/2000/svg','svg'); s.setAttribute('viewBox','0 0 200 112'); s.setAttribute('width','100%'); s.setAttribute('height','100%'); s.innerHTML = `
+        <rect x=\"54\" y=\"26\" width=\"92\" height=\"60\" rx=\"10\" fill=\"#0f1e44\" stroke=\"${themeVar('--accent-2')}66\"/>
+        ${Array.from({length:8},(_,i)=>`<rect x=\"${38+i*12}\" y=\"20\" width=\"6\" height=\"8\" rx=\"2\" fill=\"${themeVar('--accent-2')}77\"/>`).join('')}
+        ${Array.from({length:8},(_,i)=>`<rect x=\"${38+i*12}\" y=\"84\" width=\"6\" height=\"8\" rx=\"2\" fill=\"${themeVar('--accent-2')}77\"/>`).join('')}
+        <circle cx=\"100\" cy=\"56\" r=\"10\" fill=\"${themeVar('--accent')}55\" />`; return s; }
+
+    // Initial render
+    const cvsObserver = new ResizeObserver(resize); cvsObserver.observe(cvs); resize(); requestAnimationFrame(tick);
+    renderTutorials(tutorials); renderProducts(products);
+  </script>
+</body>
+</html>
